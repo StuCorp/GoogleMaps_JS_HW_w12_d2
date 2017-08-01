@@ -1,11 +1,27 @@
-var MapWrapper = function(container, center, zoom){
+var MapWrapper = function(container, center, zoom, centers){
   this.googleMap = new google.maps.Map(container, {
     center: center, 
     zoom: zoom
   });
 
+  this.centers = centers;
+
   this.markers = []; 
 };
+
+MapWrapper.prototype.geoGetUm = function(){
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var center = {lat: position.coords.latitude, lng: position.coords.longitude};
+    this.googleMap.setCenter(center);
+    this.addMarker(center);
+    this.googleMap.setZoom(15);
+  }.bind(this));
+};
+
+MapWrapper.prototype.changeCentre = function(){
+  this.googleMap.setCenter(this.centers[_.random(0,4)]);
+};
+
 
 MapWrapper.prototype.addMarker = function(coords) {
   var marker = new google.maps.Marker({
@@ -26,7 +42,7 @@ MapWrapper.prototype.addClickEvent = function(){
       lng: event.latLng.lng()
     }
     this.addMarker(coords);
-    this.addInfoWindows();
+    // this.addInfoWindows();
   }.bind(this)); 
 };
 
@@ -37,12 +53,13 @@ MapWrapper.prototype.bounceMarkers = function(){
 };
 
 MapWrapper.prototype.addInfoWindows = function(){
-  var someInfo = "YOU are not welcome here!";
+  var currentMarker = this.markers[this.markers.length-1];
+  
+  var someInfo = document.querySelector("#label-text").value;
   var infowindow = new google.maps.InfoWindow({
     content: someInfo
   });
-  this.markers.forEach(function(marker){
-  infowindow.open(this.googleMap, marker);
-  });
+
+  infowindow.open(this.googleMap, currentMarker)
 
 };
